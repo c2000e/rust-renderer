@@ -1,3 +1,4 @@
+use crate::vertex::Vertex;
 
 pub fn create_render_pipeline(
     device: &wgpu::Device,
@@ -20,7 +21,9 @@ pub fn create_render_pipeline(
             vertex: wgpu::VertexState {
                 module: &shader,
                 entry_point: "vs_main",
-                buffers: &[],
+                buffers: &[
+                    Vertex::desc(),
+                ],
             },
             fragment: Some(wgpu::FragmentState {
                 module: &shader,

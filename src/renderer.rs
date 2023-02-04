@@ -52,7 +52,9 @@ impl RendererState {
 
     pub fn render(
         &mut self,
-        pipeline: &wgpu::RenderPipeline
+        pipeline: &wgpu::RenderPipeline,
+        vertex_buffer: &wgpu::Buffer,
+        num_vertices: u32,
     ) -> Result<(), wgpu::SurfaceError> {
         let output = self.surface.get_current_texture()?;
         let view = output.texture.create_view(
@@ -89,7 +91,8 @@ impl RendererState {
             }
         );
         render_pass.set_pipeline(pipeline);
-        render_pass.draw(0..3, 0..1);
+        render_pass.set_vertex_buffer(0, vertex_buffer.slice(..));
+        render_pass.draw(0..num_vertices, 0..1);
         drop(render_pass);
 
         self.queue.submit(std::iter::once(encoder.finish()));
