@@ -1,7 +1,8 @@
 use winit::window::Window;
 pub struct RendererState {
     surface: wgpu::Surface,
-    device: wgpu::Device,
+    pub surface_config: wgpu::SurfaceConfiguration,
+    pub device: wgpu::Device,
     queue: wgpu::Queue,
 }
 
@@ -43,12 +44,16 @@ impl RendererState {
 
         return Self {
             surface,
+            surface_config,
             device,
             queue
         }
     }
 
-    pub fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
+    pub fn render(
+        &mut self,
+        pipeline: &wgpu::RenderPipeline
+    ) -> Result<(), wgpu::SurfaceError> {
         let output = self.surface.get_current_texture()?;
         let view = output.texture.create_view(
             &wgpu::TextureViewDescriptor::default()
@@ -60,7 +65,7 @@ impl RendererState {
             }
         );
 
-        let render_pass = encoder.begin_render_pass(
+        let mut render_pass = encoder.begin_render_pass(
             &wgpu::RenderPassDescriptor {
                 label: Some("Render Pass"),
                 color_attachments: &[
@@ -83,6 +88,8 @@ impl RendererState {
                 depth_stencil_attachment: None,
             }
         );
+        render_pass.set_pipeline(pipeline);
+        render_pass.draw(0..3, 0..1);
         drop(render_pass);
 
         self.queue.submit(std::iter::once(encoder.finish()));

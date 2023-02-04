@@ -1,4 +1,5 @@
 mod renderer;
+mod pipeline;
 
 use winit::{
     event::{Event, WindowEvent},
@@ -13,6 +14,11 @@ async fn run() {
 
     let mut renderer_state = renderer::RendererState::new(&window).await;
 
+    let render_pipeline = pipeline::create_render_pipeline(
+        &renderer_state.device,
+        renderer_state.surface_config.format,
+    );
+
     event_loop.run(move |event, _, control_flow| {
         control_flow.set_poll();
 
@@ -22,7 +28,7 @@ async fn run() {
                 ..
             } => control_flow.set_exit(),
             Event::MainEventsCleared => {
-                match renderer_state.render() {
+                match renderer_state.render(&render_pipeline) {
                     Ok(_) => {},
                     Err(e) => eprintln!("{:?}", e),
                 }
