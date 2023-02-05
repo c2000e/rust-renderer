@@ -3,7 +3,7 @@ pub struct RendererState {
     surface: wgpu::Surface,
     pub surface_config: wgpu::SurfaceConfiguration,
     pub device: wgpu::Device,
-    queue: wgpu::Queue,
+    pub queue: wgpu::Queue,
 }
 
 impl RendererState {
@@ -53,6 +53,7 @@ impl RendererState {
     pub fn render(
         &mut self,
         pipeline: &wgpu::RenderPipeline,
+        bind_group: &wgpu::BindGroup,
         vertex_buffer: &wgpu::Buffer,
         num_vertices: u32,
     ) -> Result<(), wgpu::SurfaceError> {
@@ -91,6 +92,7 @@ impl RendererState {
             }
         );
         render_pass.set_pipeline(pipeline);
+        render_pass.set_bind_group(0, bind_group, &[]);
         render_pass.set_vertex_buffer(0, vertex_buffer.slice(..));
         render_pass.draw(0..num_vertices, 0..1);
         drop(render_pass);
