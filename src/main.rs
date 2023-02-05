@@ -2,7 +2,11 @@ mod renderer;
 mod pipeline;
 mod vertex;
 mod texture;
-mod bind_group;
+mod bind_groups;
+
+use bind_groups::{
+    texture_bind_group,
+};
 
 use winit::{
     event::{Event, WindowEvent},
@@ -33,10 +37,10 @@ async fn run() {
         Some("Texture"),
     );
 
-    let bind_group_layout = bind_group::create_bind_group_layout(
+    let bind_group_layout = texture_bind_group::create_bind_group_layout(
         &renderer_state.device,
     );
-    let bind_group = bind_group::create_bind_group(
+    let bind_group = texture_bind_group::create_bind_group(
         &renderer_state.device,
         &bind_group_layout,
         &texture.view,
