@@ -3,7 +3,8 @@ use crate::vertex::Vertex;
 pub fn create_render_pipeline(
     device: &wgpu::Device,
     format: wgpu::TextureFormat,
-    bind_group_layout: &wgpu::BindGroupLayout
+    camera_bind_group_layout: &wgpu::BindGroupLayout,
+    texture_bind_group_layout: &wgpu::BindGroupLayout,
 ) -> wgpu::RenderPipeline {
     let shader = device.create_shader_module(
         wgpu::include_wgsl!("shader.wgsl")
@@ -12,7 +13,8 @@ pub fn create_render_pipeline(
         &wgpu::PipelineLayoutDescriptor {
             label: Some("Render Pipeline Layout"),
             bind_group_layouts: &[
-                bind_group_layout,
+                camera_bind_group_layout,
+                texture_bind_group_layout
             ],
             push_constant_ranges: &[],
         }
