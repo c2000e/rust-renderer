@@ -4,6 +4,7 @@ mod vertex;
 mod texture;
 mod bind_groups;
 mod camera;
+mod camera_controller;
 
 use bind_groups::{
     camera_bind_group,
@@ -30,9 +31,9 @@ async fn run() {
 
     let mut renderer_state = renderer::RendererState::new(&window).await;
 
-    let camera = camera::Camera::new(
+    let mut camera = camera::Camera::new(
         camera::CameraExtrinsics {
-            position: nalgebra_glm::Vec3::new(0.0, 0.0, 5.0),
+            position: nalgebra_glm::Vec4::new(0.0, 0.0, 5.0, 1.0),
             yaw: -1.5707,
             pitch: 0.0,
         },
@@ -42,6 +43,10 @@ async fn run() {
             near: 0.01,
             far: 50.0,
         },
+    );
+    let mut camera_controller = camera_controller::CameraController::new(
+        5.0,
+        1.0,
     );
     let camera_buffer = renderer_state.device.create_buffer_init(
         &wgpu::util::BufferInitDescriptor {
@@ -92,6 +97,7 @@ async fn run() {
         }
     );
 
+    let mut last_update_time = std::time::Instant::now();
     event_loop.run(move |event, _, control_flow| {
         control_flow.set_poll();
 
@@ -100,7 +106,30 @@ async fn run() {
                 event: WindowEvent::CloseRequested,
                 ..
             } => control_flow.set_exit(),
+            Event::WindowEvent {
+                event: WindowEvent::KeyboardInput {
+                    input: winit::event::KeyboardInput {
+                        state,
+                        virtual_keycode: Some(key),
+                        ..
+                    },
+                    ..
+                },
+                ..
+            } => {
+                camera_controller.process_keyboard(key, state);
+            },
             Event::MainEventsCleared => {
+                let this_update_time = std::time::Instant::now();
+                let dt = this_update_time - last_update_time;
+                last_update_time = this_update_time;
+
+                camera_controller.update_camera(&mut camera, dt);
+                renderer_state.queue.write_buffer(
+                    &camera_buffer,
+                    0,
+                    bytemuck::cast_slice(&[camera.to_uniform_matrix()]),
+                );
                 match renderer_state.render(
                     &render_pipeline,
                     &camera_bind_group,
