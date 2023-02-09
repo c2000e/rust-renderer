@@ -1,17 +1,6 @@
-mod bind_groups {
-    pub mod camera_bind_group;
-    pub mod texture_bind_group;
-}
-mod pipelines {
-    pub mod mesh_pipeline;
-}
-mod camera;
-mod camera_controller;
-mod mesh;
-mod renderer;
-
-use bind_groups::camera_bind_group;
-use pipelines::mesh_pipeline;
+use rust_renderer::bind_groups::*;
+use rust_renderer::pipelines::*;
+use rust_renderer::*;
 
 use wgpu::util::DeviceExt;
 use winit::{
