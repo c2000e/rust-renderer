@@ -1,8 +1,13 @@
-mod bind_groups;
+mod bind_groups {
+    pub mod camera_bind_group;
+    pub mod texture_bind_group;
+}
+mod pipelines {
+    pub mod mesh_pipeline;
+}
 mod camera;
 mod camera_controller;
 mod mesh;
-mod pipelines;
 mod renderer;
 
 use bind_groups::camera_bind_group;

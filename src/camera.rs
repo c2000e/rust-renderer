@@ -43,10 +43,7 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(
-        extrinsics: CameraExtrinsics,
-        intrinsics: CameraIntrinsics
-    ) -> Self {
+    pub fn new(extrinsics: CameraExtrinsics, intrinsics: CameraIntrinsics) -> Self {
         let view_matrix = extrinsics.to_view_matrix();
         let proj_matrix = intrinsics.to_perspective_matrix();
         Self {
