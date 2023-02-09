@@ -10,7 +10,7 @@ use pipelines::mesh_pipeline;
 
 use wgpu::util::DeviceExt;
 use winit::{
-    event::{Event, WindowEvent},
+    event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent},
     event_loop::EventLoop,
     window::Window,
 };
@@ -71,7 +71,17 @@ async fn run() {
 
         match event {
             Event::WindowEvent {
-                event: WindowEvent::CloseRequested,
+                event:
+                    WindowEvent::CloseRequested
+                    | WindowEvent::KeyboardInput {
+                        input:
+                            KeyboardInput {
+                                state: ElementState::Released,
+                                virtual_keycode: Some(VirtualKeyCode::Escape),
+                                ..
+                            },
+                        ..
+                    },
                 ..
             } => control_flow.set_exit(),
             Event::WindowEvent {
