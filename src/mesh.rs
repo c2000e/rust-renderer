@@ -49,9 +49,8 @@ impl Mesh {
     fn gltf_first_primitive(gltf: &gltf::Document) -> std::option::Option<gltf::Primitive> {
         let mut first_primitive = None;
         for mesh in gltf.meshes() {
-            for primitive in mesh.primitives() {
+            if let Some(primitive) = mesh.primitives().next() {
                 first_primitive = Some(primitive);
-                break;
             }
         }
         first_primitive

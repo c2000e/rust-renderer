@@ -12,9 +12,10 @@ pub mod renderer;
 
 pub mod constants {
     use crate::camera::{CameraExtrinsics, CameraIntrinsics};
+    use std::f32::consts::*;
     pub const DEFAULT_CAMERA_EXTRINSICS: CameraExtrinsics = CameraExtrinsics {
         position: nalgebra_glm::Vec4::new(0.0, 0.0, 5.0, 1.0),
-        yaw: -1.5707,
+        yaw: -FRAC_PI_2,
         pitch: 0.0,
     };
 

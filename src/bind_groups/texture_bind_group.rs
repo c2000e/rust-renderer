@@ -26,7 +26,7 @@ pub fn create_bind_group_layout(device: &wgpu::Device) -> wgpu::BindGroupLayout 
 #[allow(unused)]
 pub fn create_bind_group(
     device: &wgpu::Device,
-    bind_group_layout: &wgpu::BindGroupLayout,
+    bind_group_layout: wgpu::BindGroupLayout,
     texture_view: &wgpu::TextureView,
     sampler: &wgpu::Sampler,
 ) -> wgpu::BindGroup {

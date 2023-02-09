@@ -34,6 +34,8 @@ async fn run() {
                 usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             });
 
+    // TODO: block not really necessary, just helps clarify what is minimum
+    // required for the main render loop. Feel free to revert this
     let (camera_bind_group, render_pipeline) = {
         let camera_bind_group_layout =
             camera_bind_group::create_bind_group_layout(&renderer_state.device);
