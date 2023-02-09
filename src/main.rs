@@ -61,46 +61,37 @@ async fn run() {
     };
 
     let mut last_update_time = std::time::Instant::now();
-    event_loop.run(move |event, _, control_flow| {
+    event_loop.run(move |winit_event, _, control_flow| {
         control_flow.set_poll();
 
-        match event {
+        match winit_event {
             Event::WindowEvent {
-                event:
-                    WindowEvent::CloseRequested
-                    | WindowEvent::KeyboardInput {
-                        input:
-                            KeyboardInput {
-                                state: ElementState::Released,
-                                virtual_keycode: Some(VirtualKeyCode::Escape),
-                                ..
-                            },
-                        ..
-                    },
-                ..
-            } => control_flow.set_exit(),
-            Event::WindowEvent {
-                event:
-                    WindowEvent::KeyboardInput {
-                        input:
-                            winit::event::KeyboardInput {
-                                state,
-                                virtual_keycode: Some(key),
-                                ..
-                            },
-                        ..
-                    },
-                ..
-            } => {
-                camera_controller.process_keyboard(key, state);
-            }
-            Event::WindowEvent {
-                event: WindowEvent::Resized(physical_size),
-                ..
-            } => {
-                renderer_state.resize(physical_size);
-                camera.set_aspect(physical_size);
-            }
+                window_id,
+                event: window_event,
+            } if window.id() == window_id => match window_event {
+                WindowEvent::CloseRequested
+                | WindowEvent::KeyboardInput {
+                    input:
+                        KeyboardInput {
+                            state: ElementState::Released,
+                            virtual_keycode: Some(VirtualKeyCode::Escape),
+                            ..
+                        },
+                    ..
+                } => control_flow.set_exit(),
+                WindowEvent::KeyboardInput {
+                    input:
+                        KeyboardInput {
+                            virtual_keycode: Some(key),
+                            state,
+                            ..
+                        },
+                    ..
+                } => {
+                    camera_controller.process_keyboard(key, state);
+                }
+                _ => (),
+            },
             Event::MainEventsCleared => {
                 let this_update_time = std::time::Instant::now();
                 let dt = this_update_time - last_update_time;
