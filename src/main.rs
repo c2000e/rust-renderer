@@ -9,6 +9,19 @@ use winit::{
     window::Window,
 };
 
+const DEFAULT_CAMERA_EXTRINSICS: camera::CameraExtrinsics = camera::CameraExtrinsics {
+    position: nalgebra_glm::Vec4::new(0.0, 0.0, 5.0, 1.0),
+    yaw: -1.5707,
+    pitch: 0.0,
+};
+
+const DEFAULT_CAMERA_INTRINSICS: camera::CameraIntrinsics = camera::CameraIntrinsics {
+    aspect: 1.0,
+    fovy: 1.04,
+    near: 0.01,
+    far: 50.0,
+};
+
 async fn run() {
     let event_loop = EventLoop::new();
     let window = {
@@ -19,22 +32,11 @@ async fn run() {
 
     let mut renderer_state = renderer::RendererState::new(&window).await;
 
-    let mut camera = camera::Camera::new(
-        camera::CameraExtrinsics {
-            position: nalgebra_glm::Vec4::new(0.0, 0.0, 5.0, 1.0),
-            yaw: -1.5707,
-            pitch: 0.0,
-        },
-        camera::CameraIntrinsics {
-            aspect: renderer_state.surface_config.width as f32
-                / renderer_state.surface_config.height as f32,
-            fovy: 1.04,
-            near: 0.01,
-            far: 50.0,
-        },
-    );
+    let mut camera = camera::Camera::new(DEFAULT_CAMERA_EXTRINSICS, DEFAULT_CAMERA_INTRINSICS);
+    camera.set_aspect(window.inner_size());
 
     let mut camera_controller = camera_controller::CameraController::new(5.0, 1.0);
+
     let camera_buffer =
         renderer_state
             .device
@@ -109,7 +111,7 @@ async fn run() {
                 ..
             } => {
                 renderer_state.resize(physical_size);
-                camera.set_aspect_from_window(physical_size);
+                camera.set_aspect(physical_size);
             }
             Event::MainEventsCleared => {
                 let this_update_time = std::time::Instant::now();
