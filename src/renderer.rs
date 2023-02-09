@@ -54,9 +54,7 @@ impl RendererState {
         &mut self,
         pipeline: &wgpu::RenderPipeline,
         camera_bind_group: &wgpu::BindGroup,
-        texture_bind_group: &wgpu::BindGroup,
-        vertex_buffer: &wgpu::Buffer,
-        num_vertices: u32,
+        mesh: &crate::mesh::Mesh,
     ) -> Result<(), wgpu::SurfaceError> {
         let output = self.surface.get_current_texture()?;
         let view = output.texture.create_view(
@@ -93,10 +91,19 @@ impl RendererState {
             }
         );
         render_pass.set_pipeline(pipeline);
+
         render_pass.set_bind_group(0, camera_bind_group, &[]);
-        render_pass.set_bind_group(1, texture_bind_group, &[]);
-        render_pass.set_vertex_buffer(0, vertex_buffer.slice(..));
-        render_pass.draw(0..num_vertices, 0..1);
+
+        render_pass.set_vertex_buffer(0, mesh.buffer.slice(mesh.position_range()));
+        render_pass.set_vertex_buffer(1, mesh.buffer.slice(mesh.normal_range()));
+
+        render_pass.set_index_buffer(
+            mesh.buffer.slice(mesh.index_range()),
+            wgpu::IndexFormat::Uint16,
+        );
+
+        render_pass.draw_indexed(0..mesh.index_count, 0, 0..1);
+
         drop(render_pass);
 
         self.queue.submit(std::iter::once(encoder.finish()));

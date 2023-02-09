@@ -1,15 +1,12 @@
 mod renderer;
-mod pipeline;
-mod vertex;
-mod texture;
+mod pipelines;
 mod bind_groups;
 mod camera;
 mod camera_controller;
+mod mesh;
 
-use bind_groups::{
-    camera_bind_group,
-    texture_bind_group,
-};
+use bind_groups::camera_bind_group;
+use pipelines::mesh_pipeline;
 
 use winit::{
     event::{Event, WindowEvent},
@@ -17,12 +14,6 @@ use winit::{
     window::Window,
 };
 use wgpu::util::DeviceExt;
-
-const VERTICES: [vertex::Vertex; 3] = [
-    vertex::Vertex { position: [0.0, 0.5, 0.0], tex_coords: [0.0, 1.0] },
-    vertex::Vertex { position: [-0.5, -0.5, 0.0], tex_coords: [0.0, 0.0] },
-    vertex::Vertex { position: [0.5, -0.5, 0.0], tex_coords: [1.0, 0.0] },
-];
 
 async fn run() {
     let event_loop = EventLoop::new();
@@ -64,37 +55,15 @@ async fn run() {
         &camera_buffer
     );
 
-    let albedo_bytes = include_bytes!("../res/bricks-albedo.png");
-    let albedo_image = image::load_from_memory(albedo_bytes).unwrap();
-    let texture = texture::Texture::from_image(
-        &renderer_state.device,
-        &renderer_state.queue,
-        &albedo_image,
-        Some("Texture"),
-    );
-    let texture_bind_group_layout = texture_bind_group::create_bind_group_layout(
-        &renderer_state.device,
-    );
-    let texture_bind_group = texture_bind_group::create_bind_group(
-        &renderer_state.device,
-        &texture_bind_group_layout,
-        &texture.view,
-        &texture.sampler,
-    );
-
-    let render_pipeline = pipeline::create_render_pipeline(
+    let render_pipeline = mesh_pipeline::create_render_pipeline(
         &renderer_state.device,
         renderer_state.surface_config.format,
         &camera_bind_group_layout,
-        &texture_bind_group_layout,
     );
 
-    let vertex_buffer = renderer_state.device.create_buffer_init(
-        &wgpu::util::BufferInitDescriptor {
-            label: Some("Vertex Buffer"),
-            contents: bytemuck::cast_slice(&VERTICES),
-            usage: wgpu::BufferUsages::VERTEX,
-        }
+    let mesh = mesh::Mesh::from_gltf(
+        "/Users/christian/Documents/dev-projects/rust-renderer/res/icosphere.gltf",
+        &renderer_state.device,
     );
 
     let mut last_update_time = std::time::Instant::now();
@@ -133,9 +102,7 @@ async fn run() {
                 match renderer_state.render(
                     &render_pipeline,
                     &camera_bind_group,
-                    &texture_bind_group,
-                    &vertex_buffer,
-                    3
+                    &mesh,
                 ) {
                     Ok(_) => {},
                     Err(e) => eprintln!("{:?}", e),

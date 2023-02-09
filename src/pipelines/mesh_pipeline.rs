@@ -1,20 +1,18 @@
-use crate::vertex::Vertex;
+use crate::mesh::Mesh;
 
 pub fn create_render_pipeline(
     device: &wgpu::Device,
     format: wgpu::TextureFormat,
     camera_bind_group_layout: &wgpu::BindGroupLayout,
-    texture_bind_group_layout: &wgpu::BindGroupLayout,
 ) -> wgpu::RenderPipeline {
     let shader = device.create_shader_module(
-        wgpu::include_wgsl!("shader.wgsl")
+        wgpu::include_wgsl!("../shader.wgsl")
     );
     let render_pipeline_layout = device.create_pipeline_layout(
         &wgpu::PipelineLayoutDescriptor {
             label: Some("Render Pipeline Layout"),
             bind_group_layouts: &[
                 camera_bind_group_layout,
-                texture_bind_group_layout
             ],
             push_constant_ranges: &[],
         }
@@ -27,7 +25,8 @@ pub fn create_render_pipeline(
                 module: &shader,
                 entry_point: "vs_main",
                 buffers: &[
-                    Vertex::desc(),
+                    Mesh::position_layout(),
+                    Mesh::normal_layout(),
                 ],
             },
             fragment: Some(wgpu::FragmentState {
