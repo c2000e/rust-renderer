@@ -61,10 +61,14 @@ async fn run() {
         &camera_bind_group_layout,
     );
 
-    let mesh = mesh::Mesh::from_gltf(
-        "/Users/christian/Documents/dev-projects/rust-renderer/res/icosphere.gltf",
-        &renderer_state.device,
+    let mut mesh_path = std::env::current_exe().expect(
+        "Failed to find path to executable."
     );
+    mesh_path.pop();
+    mesh_path.pop();
+    mesh_path.pop();
+    mesh_path.push("res/icosphere.gltf");
+    let mesh = mesh::Mesh::from_gltf(mesh_path, &renderer_state.device,);
 
     let mut last_update_time = std::time::Instant::now();
     event_loop.run(move |event, _, control_flow| {
