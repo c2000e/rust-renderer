@@ -1,4 +1,4 @@
-use winit::window::Window;
+use winit::{dpi::PhysicalSize, window::Window};
 pub struct RendererState {
     surface: wgpu::Surface,
     pub surface_config: wgpu::SurfaceConfiguration,
@@ -104,5 +104,13 @@ impl RendererState {
         output.present();
 
         Ok(())
+    }
+
+    pub fn resize(&mut self, new_size: PhysicalSize<u32>) {
+        if new_size.width > 0 && new_size.height > 0 {
+            self.surface_config.width = new_size.width;
+            self.surface_config.height = new_size.height;
+            self.surface.configure(&self.device, &self.surface_config);
+        }
     }
 }

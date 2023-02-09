@@ -11,8 +11,11 @@ use winit::{
 
 async fn run() {
     let event_loop = EventLoop::new();
-    let window = Window::new(&event_loop).unwrap();
-    window.set_title("rust-renderer");
+    let window = {
+        let window = Window::new(&event_loop).unwrap();
+        window.set_title("rust-renderer");
+        window
+    };
 
     let mut renderer_state = renderer::RendererState::new(&window).await;
 
@@ -23,12 +26,14 @@ async fn run() {
             pitch: 0.0,
         },
         camera::CameraIntrinsics {
-            aspect: 1.0, // TODO: fix this!
+            aspect: renderer_state.surface_config.width as f32
+                / renderer_state.surface_config.height as f32,
             fovy: 1.04,
             near: 0.01,
             far: 50.0,
         },
     );
+
     let mut camera_controller = camera_controller::CameraController::new(5.0, 1.0);
     let camera_buffer =
         renderer_state
@@ -38,26 +43,32 @@ async fn run() {
                 contents: bytemuck::cast_slice(&[camera.to_uniform_matrix()]),
                 usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             });
-    let camera_bind_group_layout =
-        camera_bind_group::create_bind_group_layout(&renderer_state.device);
-    let camera_bind_group = camera_bind_group::create_bind_group(
-        &renderer_state.device,
-        &camera_bind_group_layout,
-        &camera_buffer,
-    );
 
-    let render_pipeline = mesh_pipeline::create_render_pipeline(
-        &renderer_state.device,
-        renderer_state.surface_config.format,
-        &camera_bind_group_layout,
-    );
+    let (camera_bind_group, render_pipeline) = {
+        let camera_bind_group_layout =
+            camera_bind_group::create_bind_group_layout(&renderer_state.device);
+        (
+            camera_bind_group::create_bind_group(
+                &renderer_state.device,
+                &camera_bind_group_layout,
+                &camera_buffer,
+            ),
+            mesh_pipeline::create_render_pipeline(
+                &renderer_state.device,
+                renderer_state.surface_config.format,
+                &camera_bind_group_layout,
+            ),
+        )
+    };
 
-    let mut mesh_path = std::env::current_exe().expect("Failed to find path to executable.");
-    mesh_path.pop();
-    mesh_path.pop();
-    mesh_path.pop();
-    mesh_path.push("res/icosphere.gltf");
-    let mesh = mesh::Mesh::from_gltf(mesh_path, &renderer_state.device);
+    let mesh = {
+        let mut mesh_path = std::env::current_exe().expect("Failed to find path to executable.");
+        mesh_path.pop();
+        mesh_path.pop();
+        mesh_path.pop();
+        mesh_path.push("res/icosphere.gltf");
+        mesh::Mesh::from_gltf(mesh_path, &renderer_state.device)
+    };
 
     let mut last_update_time = std::time::Instant::now();
     event_loop.run(move |event, _, control_flow| {
@@ -92,6 +103,13 @@ async fn run() {
                 ..
             } => {
                 camera_controller.process_keyboard(key, state);
+            }
+            Event::WindowEvent {
+                event: WindowEvent::Resized(physical_size),
+                ..
+            } => {
+                renderer_state.resize(physical_size);
+                camera.set_aspect_from_window(physical_size);
             }
             Event::MainEventsCleared => {
                 let this_update_time = std::time::Instant::now();

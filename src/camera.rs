@@ -1,3 +1,5 @@
+use winit::dpi::PhysicalSize;
+
 extern crate nalgebra_glm as glm;
 
 pub struct CameraExtrinsics {
@@ -56,5 +58,10 @@ impl Camera {
 
     pub fn to_uniform_matrix(&self) -> [[f32; 4]; 4] {
         (self.proj_matrix * self.view_matrix).into()
+    }
+
+    pub fn set_aspect_from_window(&mut self, size: PhysicalSize<u32>) {
+        self.intrinsics.aspect = size.width as f32 / size.height as f32;
+        self.proj_matrix = self.intrinsics.to_perspective_matrix();
     }
 }
