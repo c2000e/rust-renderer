@@ -65,10 +65,7 @@ impl Mesh {
         let count = accessor.count() as u32;
         ((offset, offset + length), count)
     }
-    fn attribute_range(
-        primitive: &gltf::Primitive,
-        attribute: &gltf::Semantic,
-    ) -> (u64, u64) {
+    fn attribute_range(primitive: &gltf::Primitive, attribute: &gltf::Semantic) -> (u64, u64) {
         let accessor = primitive.get(attribute).unwrap();
         let view = accessor.view().unwrap();
         let offset = view.offset() as u64;
@@ -76,10 +73,7 @@ impl Mesh {
         (offset, offset + length)
     }
 
-    pub fn from_gltf<P: AsRef<std::path::Path>>(
-        path: P,
-        device: &wgpu::Device
-    ) -> Self {
+    pub fn from_gltf<P: AsRef<std::path::Path>>(path: P, device: &wgpu::Device) -> Self {
         // Load data from file
         let load_result = gltf::import(path);
         let (gltf, buffers, _images) = match load_result {
@@ -88,24 +82,16 @@ impl Mesh {
         };
 
         // Create buffer on gpu
-        let buffer = device.create_buffer_init(
-            &wgpu::util::BufferInitDescriptor {
-                label: Some("Mesh Buffer"),
-                contents: bytemuck::cast_slice(&(buffers[0].0)),
-                usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::INDEX,
-            }
-        );
+        let buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Mesh Buffer"),
+            contents: bytemuck::cast_slice(&(buffers[0].0)),
+            usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::INDEX,
+        });
 
         // Get buffer access information
         let primitive = Mesh::gltf_first_primitive(&gltf).unwrap();
-        let position_range = Mesh::attribute_range(
-            &primitive,
-            &gltf::Semantic::Positions,
-        );
-        let normal_range = Mesh::attribute_range(
-            &primitive,
-            &gltf::Semantic::Normals,
-        );
+        let position_range = Mesh::attribute_range(&primitive, &gltf::Semantic::Positions);
+        let normal_range = Mesh::attribute_range(&primitive, &gltf::Semantic::Normals);
 
         let (index_range, index_count) = Mesh::index_range_and_count(&primitive);
 

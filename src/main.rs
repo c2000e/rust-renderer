@@ -1,19 +1,19 @@
-mod renderer;
-mod pipelines;
 mod bind_groups;
 mod camera;
 mod camera_controller;
 mod mesh;
+mod pipelines;
+mod renderer;
 
 use bind_groups::camera_bind_group;
 use pipelines::mesh_pipeline;
 
+use wgpu::util::DeviceExt;
 use winit::{
     event::{Event, WindowEvent},
     event_loop::EventLoop,
     window::Window,
 };
-use wgpu::util::DeviceExt;
 
 async fn run() {
     let event_loop = EventLoop::new();
@@ -35,24 +35,21 @@ async fn run() {
             far: 50.0,
         },
     );
-    let mut camera_controller = camera_controller::CameraController::new(
-        5.0,
-        1.0,
-    );
-    let camera_buffer = renderer_state.device.create_buffer_init(
-        &wgpu::util::BufferInitDescriptor {
-            label: Some("Camera Buffer"),
-            contents: bytemuck::cast_slice(&[camera.to_uniform_matrix()]),
-            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
-        },
-    );
-    let camera_bind_group_layout = camera_bind_group::create_bind_group_layout(
-        &renderer_state.device,
-    );
+    let mut camera_controller = camera_controller::CameraController::new(5.0, 1.0);
+    let camera_buffer =
+        renderer_state
+            .device
+            .create_buffer_init(&wgpu::util::BufferInitDescriptor {
+                label: Some("Camera Buffer"),
+                contents: bytemuck::cast_slice(&[camera.to_uniform_matrix()]),
+                usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+            });
+    let camera_bind_group_layout =
+        camera_bind_group::create_bind_group_layout(&renderer_state.device);
     let camera_bind_group = camera_bind_group::create_bind_group(
         &renderer_state.device,
         &camera_bind_group_layout,
-        &camera_buffer
+        &camera_buffer,
     );
 
     let render_pipeline = mesh_pipeline::create_render_pipeline(
@@ -61,14 +58,12 @@ async fn run() {
         &camera_bind_group_layout,
     );
 
-    let mut mesh_path = std::env::current_exe().expect(
-        "Failed to find path to executable."
-    );
+    let mut mesh_path = std::env::current_exe().expect("Failed to find path to executable.");
     mesh_path.pop();
     mesh_path.pop();
     mesh_path.pop();
     mesh_path.push("res/icosphere.gltf");
-    let mesh = mesh::Mesh::from_gltf(mesh_path, &renderer_state.device,);
+    let mesh = mesh::Mesh::from_gltf(mesh_path, &renderer_state.device);
 
     let mut last_update_time = std::time::Instant::now();
     event_loop.run(move |event, _, control_flow| {
@@ -80,18 +75,20 @@ async fn run() {
                 ..
             } => control_flow.set_exit(),
             Event::WindowEvent {
-                event: WindowEvent::KeyboardInput {
-                    input: winit::event::KeyboardInput {
-                        state,
-                        virtual_keycode: Some(key),
+                event:
+                    WindowEvent::KeyboardInput {
+                        input:
+                            winit::event::KeyboardInput {
+                                state,
+                                virtual_keycode: Some(key),
+                                ..
+                            },
                         ..
                     },
-                    ..
-                },
                 ..
             } => {
                 camera_controller.process_keyboard(key, state);
-            },
+            }
             Event::MainEventsCleared => {
                 let this_update_time = std::time::Instant::now();
                 let dt = this_update_time - last_update_time;
@@ -103,15 +100,11 @@ async fn run() {
                     0,
                     bytemuck::cast_slice(&[camera.to_uniform_matrix()]),
                 );
-                match renderer_state.render(
-                    &render_pipeline,
-                    &camera_bind_group,
-                    &mesh,
-                ) {
-                    Ok(_) => {},
+                match renderer_state.render(&render_pipeline, &camera_bind_group, &mesh) {
+                    Ok(_) => {}
                     Err(e) => eprintln!("{:?}", e),
                 }
-            },
+            }
             _ => (),
         }
     });
