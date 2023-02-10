@@ -57,6 +57,7 @@ impl RendererState {
         camera_bind_group: &wgpu::BindGroup,
         material_bind_group: &wgpu::BindGroup,
         mesh: &crate::mesh::Mesh,
+        depth_texture_view: &wgpu::TextureView,
     ) -> Result<(), wgpu::SurfaceError> {
         let output = self.surface.get_current_texture()?;
         let view = output
@@ -84,7 +85,14 @@ impl RendererState {
                     store: true,
                 },
             })],
-            depth_stencil_attachment: None,
+            depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
+                view: &depth_texture_view,
+                depth_ops: Some(wgpu::Operations {
+                    load: wgpu::LoadOp::Clear(1.0),
+                    store: true,
+                }),
+                stencil_ops: None,
+            }),
         });
         render_pass.set_pipeline(pipeline);
 

@@ -72,6 +72,12 @@ async fn run() {
         )
     };
 
+    let depth_texture = texture::Texture::create_depth_texture(
+        &renderer_state.device,
+        window.inner_size().width,
+        window.inner_size().height,
+    );
+
     let mut last_update_time = std::time::Instant::now();
     event_loop.run(move |winit_event, _, control_flow| {
         control_flow.set_poll();
@@ -119,7 +125,8 @@ async fn run() {
                     &render_pipeline,
                     &camera_bind_group,
                     &material_bind_group,
-                    &mesh
+                    &mesh,
+                    &depth_texture.view,
                 ) {
                     Ok(_) => {}
                     Err(e) => eprintln!("{:?}", e),
