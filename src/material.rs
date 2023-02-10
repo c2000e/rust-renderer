@@ -3,6 +3,7 @@ use crate::texture::Texture;
 pub struct Material {
     pub albedo_map: Texture,
     pub normal_map: Texture,
+    pub roughness_metalness_map: Texture,
     pub sampler: wgpu::Sampler,
 }
 
@@ -12,6 +13,7 @@ impl Material {
         queue: &wgpu::Queue,
         albedo_bytes: &Vec<u8>,
         normal_bytes: &Vec<u8>,
+        roughness_metalness_bytes: &Vec<u8>,
         dimensions: (u32, u32),
         label: &str,
     ) -> Self {
@@ -33,6 +35,15 @@ impl Material {
             &normal_label,
         );
 
+        let roughness_metalness_label = label.to_string() + " Roughness, Metalness";
+        let roughness_metalness_map = Texture::from_bytes(
+            device,
+            queue,
+            roughness_metalness_bytes,
+            dimensions,
+            &roughness_metalness_label,
+        );
+
         let sampler_label = label.to_string() + " Sampler";
         let sampler = device.create_sampler(&wgpu::SamplerDescriptor {
             label: Some(&sampler_label),
@@ -48,6 +59,7 @@ impl Material {
         Self {
             albedo_map,
             normal_map,
+            roughness_metalness_map,
             sampler,
         }
     }

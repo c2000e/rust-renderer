@@ -38,6 +38,8 @@ var t_albedo: texture_2d<f32>;
 @group(1) @binding(1)
 var t_normal: texture_2d<f32>;
 @group(1) @binding(2)
+var t_roughness_metalness: texture_2d<f32>;
+@group(1) @binding(3)
 var s_material: sampler;
 
 @fragment
@@ -48,7 +50,9 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     let normal_map = 2.0 * textureSample(t_normal, s_material, in.texcoords).rgb - 1.0;
     let normal = normalize(tbn_matrix * normal_map);
 
+    //let roughness_metalness = textureSample(t_roughness_metalness, s_material, in.texcoords).rg;
+
     let object_color = 0.5 * (normal + 1.0);
 
-    return vec4<f32>(normal, 1.0);
+    return vec4<f32>(object_color, 1.0);
 }

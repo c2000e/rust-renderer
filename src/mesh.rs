@@ -119,12 +119,14 @@ impl Mesh {
         // Load material
         let albedo_bytes = &images[0].pixels;
         let normal_bytes = &images[2].pixels;
+        let roughness_metalness_bytes = &images[1].pixels;
         let dimensions = (images[0].width, images[0].height);
         let material = Material::from_bytes(
             device,
             queue,
             albedo_bytes,
             normal_bytes,
+            roughness_metalness_bytes,
             dimensions,
             "Material",
         );
