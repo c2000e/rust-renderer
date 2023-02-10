@@ -93,7 +93,8 @@ impl RendererState {
 
         render_pass.set_vertex_buffer(0, mesh.buffer.slice(mesh.position_range()));
         render_pass.set_vertex_buffer(1, mesh.buffer.slice(mesh.normal_range()));
-        render_pass.set_vertex_buffer(2, mesh.buffer.slice(mesh.texcoord_range()));
+        render_pass.set_vertex_buffer(2, mesh.buffer.slice(mesh.tangent_range()));
+        render_pass.set_vertex_buffer(3, mesh.buffer.slice(mesh.texcoord_range()));
 
         render_pass.set_index_buffer(
             mesh.buffer.slice(mesh.index_range()),

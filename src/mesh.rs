@@ -1,6 +1,6 @@
 use wgpu::util::DeviceExt;
 use wgpu::VertexAttribute;
-use wgpu::VertexFormat::{ Float32x2, Float32x3, };
+use wgpu::VertexFormat::{ Float32x2, Float32x3, Float32x4, };
 
 use crate::material::Material;
 
@@ -13,6 +13,7 @@ pub struct Mesh {
     index_range: (u64, u64),
     position_range: (u64, u64),
     normal_range: (u64, u64),
+    tangent_range: (u64, u64),
     texcoord_range: (u64, u64),
 }
 
@@ -39,13 +40,24 @@ impl Mesh {
             }],
         }
     }
+    pub fn tangent_layout<'a>() -> wgpu::VertexBufferLayout<'a> {
+        wgpu::VertexBufferLayout {
+            array_stride: wgpu::VertexFormat::size(&Float32x4),
+            step_mode: wgpu::VertexStepMode::Vertex,
+            attributes: &[VertexAttribute {
+                offset: 0,
+                shader_location: 2,
+                format: Float32x4,
+            }],
+        }
+    }
     pub fn texcoord_layout<'a>() -> wgpu::VertexBufferLayout<'a> {
         wgpu::VertexBufferLayout {
             array_stride: wgpu::VertexFormat::size(&Float32x2),
             step_mode: wgpu::VertexStepMode::Vertex,
             attributes: &[VertexAttribute {
                 offset: 0,
-                shader_location: 2,
+                shader_location: 3,
                 format: Float32x2,
             }],
         }
@@ -59,6 +71,9 @@ impl Mesh {
     }
     pub fn normal_range(&self) -> std::ops::Range<u64> {
         self.normal_range.0..self.normal_range.1
+    }
+    pub fn tangent_range(&self) -> std::ops::Range<u64> {
+        self.tangent_range.0..self.tangent_range.1
     }
     pub fn texcoord_range(&self) -> std::ops::Range<u64> {
         self.texcoord_range.0..self.texcoord_range.1
@@ -104,11 +119,13 @@ impl Mesh {
 
         // Load material
         let albedo_bytes = &images[0].pixels;
+        let normal_bytes = &images[2].pixels;
         let dimensions = (images[0].width, images[0].height);
         let material = Material::from_bytes(
             device,
             queue,
             albedo_bytes,
+            normal_bytes,
             dimensions,
             "Material",
         );
@@ -124,6 +141,7 @@ impl Mesh {
         let primitive = Mesh::gltf_first_primitive(&gltf).unwrap();
         let position_range = Mesh::attribute_range(&primitive, &gltf::Semantic::Positions);
         let normal_range = Mesh::attribute_range(&primitive, &gltf::Semantic::Normals);
+        let tangent_range = Mesh::attribute_range(&primitive, &gltf::Semantic::Tangents);
         let texcoord_range = Mesh::attribute_range(&primitive, &gltf::Semantic::TexCoords(0));
 
         let (index_range, index_count) = Mesh::index_range_and_count(&primitive);
@@ -136,6 +154,7 @@ impl Mesh {
             index_count,
             position_range,
             normal_range,
+            tangent_range,
             texcoord_range,
         }
     }

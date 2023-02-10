@@ -60,6 +60,7 @@ async fn run() {
                 &renderer_state.device,
                 &material_bind_group_layout,
                 &mesh.material.albedo_map.view,
+                &mesh.material.normal_map.view,
                 &mesh.material.sampler,
             ),
             mesh_pipeline::create_render_pipeline(

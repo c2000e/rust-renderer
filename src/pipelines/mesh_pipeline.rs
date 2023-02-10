@@ -25,6 +25,7 @@ pub fn create_render_pipeline(
             buffers: &[
                 Mesh::position_layout(),
                 Mesh::normal_layout(),
+                Mesh::tangent_layout(),
                 Mesh::texcoord_layout(),
             ],
         },

@@ -2,6 +2,7 @@ use crate::texture::Texture;
 
 pub struct Material {
     pub albedo_map: Texture,
+    pub normal_map: Texture,
     pub sampler: wgpu::Sampler,
 }
 
@@ -10,6 +11,7 @@ impl Material {
         device: &wgpu::Device,
         queue: &wgpu::Queue,
         albedo_bytes: &Vec<u8>,
+        normal_bytes: &Vec<u8>,
         dimensions: (u32, u32),
         label: &str,
     ) -> Self {
@@ -20,6 +22,15 @@ impl Material {
             albedo_bytes,
             dimensions,
             &albedo_label,
+        );
+
+        let normal_label = label.to_string() + " Normal";
+        let normal_map = Texture::from_bytes(
+            device,
+            queue,
+            normal_bytes,
+            dimensions,
+            &normal_label,
         );
 
         let sampler_label = label.to_string() + " Sampler";
@@ -36,6 +47,7 @@ impl Material {
 
         Self {
             albedo_map,
+            normal_map,
             sampler,
         }
     }
