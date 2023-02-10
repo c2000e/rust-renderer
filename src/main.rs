@@ -34,32 +34,41 @@ async fn run() {
                 usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             });
 
+    let mesh = {
+        let mut mesh_path = std::env::current_exe().expect("Failed to find path to executable.");
+        mesh_path.pop();
+        mesh_path.pop();
+        mesh_path.pop();
+        mesh_path.push("res/avocado/avocado.gltf");
+        mesh::Mesh::from_gltf(mesh_path, &renderer_state.device, &renderer_state.queue)
+    };
+
     // TODO: block not really necessary, just helps clarify what is minimum
     // required for the main render loop. Feel free to revert this
-    let (camera_bind_group, render_pipeline) = {
+    let (camera_bind_group, material_bind_group, render_pipeline) = {
         let camera_bind_group_layout =
             camera_bind_group::create_bind_group_layout(&renderer_state.device);
+        let material_bind_group_layout =
+            material_bind_group::create_bind_group_layout(&renderer_state.device);
         (
             camera_bind_group::create_bind_group(
                 &renderer_state.device,
                 &camera_bind_group_layout,
                 &camera_buffer,
             ),
+            material_bind_group::create_bind_group(
+                &renderer_state.device,
+                &material_bind_group_layout,
+                &mesh.material.albedo_map.view,
+                &mesh.material.sampler,
+            ),
             mesh_pipeline::create_render_pipeline(
                 &renderer_state.device,
                 renderer_state.surface_config.format,
                 &camera_bind_group_layout,
+                &material_bind_group_layout,
             ),
         )
-    };
-
-    let mesh = {
-        let mut mesh_path = std::env::current_exe().expect("Failed to find path to executable.");
-        mesh_path.pop();
-        mesh_path.pop();
-        mesh_path.pop();
-        mesh_path.push("res/icosphere.gltf");
-        mesh::Mesh::from_gltf(mesh_path, &renderer_state.device)
     };
 
     let mut last_update_time = std::time::Instant::now();
@@ -105,7 +114,12 @@ async fn run() {
                     0,
                     bytemuck::cast_slice(&[camera.to_uniform_matrix()]),
                 );
-                match renderer_state.render(&render_pipeline, &camera_bind_group, &mesh) {
+                match renderer_state.render(
+                    &render_pipeline,
+                    &camera_bind_group,
+                    &material_bind_group,
+                    &mesh
+                ) {
                     Ok(_) => {}
                     Err(e) => eprintln!("{:?}", e),
                 }

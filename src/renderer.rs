@@ -1,4 +1,5 @@
 use winit::{dpi::PhysicalSize, window::Window};
+
 pub struct RendererState {
     surface: wgpu::Surface,
     pub surface_config: wgpu::SurfaceConfiguration,
@@ -54,6 +55,7 @@ impl RendererState {
         &mut self,
         pipeline: &wgpu::RenderPipeline,
         camera_bind_group: &wgpu::BindGroup,
+        material_bind_group: &wgpu::BindGroup,
         mesh: &crate::mesh::Mesh,
     ) -> Result<(), wgpu::SurfaceError> {
         let output = self.surface.get_current_texture()?;
@@ -87,9 +89,11 @@ impl RendererState {
         render_pass.set_pipeline(pipeline);
 
         render_pass.set_bind_group(0, camera_bind_group, &[]);
+        render_pass.set_bind_group(1, material_bind_group, &[]);
 
         render_pass.set_vertex_buffer(0, mesh.buffer.slice(mesh.position_range()));
         render_pass.set_vertex_buffer(1, mesh.buffer.slice(mesh.normal_range()));
+        render_pass.set_vertex_buffer(2, mesh.buffer.slice(mesh.texcoord_range()));
 
         render_pass.set_index_buffer(
             mesh.buffer.slice(mesh.index_range()),

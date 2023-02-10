@@ -1,7 +1,6 @@
-#[allow(unused)]
 pub fn create_bind_group_layout(device: &wgpu::Device) -> wgpu::BindGroupLayout {
     device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-        label: Some("Bind Group Layout"),
+        label: Some("Material Bind Group Layout"),
         entries: &[
             wgpu::BindGroupLayoutEntry {
                 binding: 0,
@@ -23,20 +22,19 @@ pub fn create_bind_group_layout(device: &wgpu::Device) -> wgpu::BindGroupLayout 
     })
 }
 
-#[allow(unused)]
 pub fn create_bind_group(
     device: &wgpu::Device,
-    bind_group_layout: wgpu::BindGroupLayout,
-    texture_view: &wgpu::TextureView,
+    bind_group_layout: &wgpu::BindGroupLayout,
+    albedo_view: &wgpu::TextureView,
     sampler: &wgpu::Sampler,
 ) -> wgpu::BindGroup {
     device.create_bind_group(&wgpu::BindGroupDescriptor {
-        label: Some("Bind Group"),
+        label: Some("Material Bind Group"),
         layout: &bind_group_layout,
         entries: &[
             wgpu::BindGroupEntry {
                 binding: 0,
-                resource: wgpu::BindingResource::TextureView(texture_view),
+                resource: wgpu::BindingResource::TextureView(albedo_view),
             },
             wgpu::BindGroupEntry {
                 binding: 1,
