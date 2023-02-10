@@ -1,6 +1,6 @@
 use wgpu::util::DeviceExt;
 use wgpu::VertexAttribute;
-use wgpu::VertexFormat::{ Float32x2, Float32x3, Float32x4, };
+use wgpu::VertexFormat::{Float32x2, Float32x3, Float32x4};
 
 use crate::material::Material;
 
@@ -105,17 +105,16 @@ impl Mesh {
         (offset, offset + length)
     }
 
-    pub fn from_gltf<P: AsRef<std::path::Path>>(
-        path: P,
-        device: &wgpu::Device,
-        queue: &wgpu::Queue,
-    ) -> Self {
+    pub fn from_gltf(path: &std::path::Path, device: &wgpu::Device, queue: &wgpu::Queue) -> Self {
         // Load data from file
-        let load_result = gltf::import(path);
-        let (gltf, buffers, images) = match load_result {
-            Ok(data) => data,
-            Err(error) => panic!("Problem opening the file: {:?}", error),
-        };
+        if !path.try_exists().unwrap() {
+            panic!("Could not find gltf file {}", path.to_str().unwrap());
+        }
+
+        let (gltf, buffers, images) = gltf::import(path).expect(&format!(
+            "Something broken in gltf file '{}'",
+            path.to_str().unwrap()
+        ));
 
         // Load material
         let albedo_bytes = &images[0].pixels;

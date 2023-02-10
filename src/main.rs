@@ -40,7 +40,7 @@ async fn run() {
         mesh_path.pop();
         mesh_path.pop();
         mesh_path.push("res/avocado/avocado.gltf");
-        mesh::Mesh::from_gltf(mesh_path, &renderer_state.device, &renderer_state.queue)
+        mesh::Mesh::from_gltf(&mesh_path, &renderer_state.device, &renderer_state.queue)
     };
 
     // TODO: block not really necessary, just helps clarify what is minimum
