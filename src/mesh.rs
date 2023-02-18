@@ -111,10 +111,9 @@ impl Mesh {
             panic!("Could not find gltf file {}", path.to_str().unwrap());
         }
 
-        let (gltf, buffers, images) = gltf::import(path).expect(&format!(
-            "Something broken in gltf file '{}'",
-            path.to_str().unwrap()
-        ));
+        let (gltf, buffers, images) = gltf::import(path).unwrap_or_else(|_| {
+            panic!("Something broken in gltf file '{}'", path.to_str().unwrap())
+        });
 
         // Load material
         let albedo_bytes = &images[0].pixels;

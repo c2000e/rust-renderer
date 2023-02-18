@@ -9,10 +9,7 @@ pub fn create_render_pipeline(
     let shader = device.create_shader_module(wgpu::include_wgsl!("../shader.wgsl"));
     let render_pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
         label: Some("Render Pipeline Layout"),
-        bind_group_layouts: &[
-            camera_bind_group_layout,
-            material_bind_group_layout,
-        ],
+        bind_group_layouts: &[camera_bind_group_layout, material_bind_group_layout],
         push_constant_ranges: &[],
     });
 
